@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Gradsko zelenilo</string>
+    <string name="title_profile">Profilna</string>
+    <string name="title_plan">Plan</string>
+    <string name="title_servises">Servisi</string>
+    <string name="sezonski_kalendar">BELESKE</string>
+    <string name="vremenska_prognoza">VREMENSKA PROGNOZA</string>
+    <string name="radne_subote">Radne subote:</string>
+    <string name="radne_nedelje">Radne nedelje:</string>
+    <string name="profile_foto">profile foto</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="login">Gradsko zelenilo</string>
+    <string name="add_job">Dodavanje obaveze</string>
+    <string name="show_job">Prikaz obaveze</string>
+    <string name="kalendar">Kalendar</string>
+    <string name="prognoza">Prognoza</string>
+    <string name="google_api_key">AIzaSyCE9RbwFjFjcN4AGNQWYJqG6u56raDse1c</string>
+</resources>
