@@ -8,7 +8,7 @@ three UI fragments of main activity (profile, schedule, and services).
 Schedule fragment provide an overview of tasks that was completed or should be done.
 During a proccess of adding new tasks, workers must choose time limits as well as location details via Google Maps SDK.
 The tasks can be retrived from database by mounth or degree of work completion
-which can be updated via UI through showed list of tasks.
+which can be updated through showed list of tasks.
 Application data has stored in local Room Datebase to contribute testing simplicity 
 but of course it can be extended by other datebase providers.
 
