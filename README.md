@@ -1,6 +1,6 @@
 # PublicGreeneryAndroid
 
-A project represents Android application that support workers in maintenance of public greenery
+A project represents Android application that supports workers in maintenance of public greenery
 by improving process of planning and supervision of their job tasks.
 It is organized in four UI activities (login, main, show tasks, and add tasks) and 
 three UI fragments of main activity (profile, schedule, and services).
