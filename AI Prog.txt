@@ -1,0 +1,2 @@
+
+Placeholder and workholder when working with AI plugin inside VisualCode to be catched by ActivityWatch

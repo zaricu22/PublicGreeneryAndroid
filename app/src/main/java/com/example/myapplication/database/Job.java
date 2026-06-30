@@ -9,7 +9,7 @@ import java.util.Date;
 @Entity
 public class Job {
     // Sam generise ID pocevsi od 1
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @NonNull
     private Integer id;
 

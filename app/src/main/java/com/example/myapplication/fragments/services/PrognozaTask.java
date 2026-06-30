@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.myapplication.BuildConfig;
 import com.example.myapplication.R;
 import com.example.myapplication.fragments.services.gson.Hour;
 import com.example.myapplication.fragments.services.gson.WeatherResult;
@@ -37,7 +38,7 @@ public class PrognozaTask extends AsyncTask<Void, Void, WeatherResult> {
     protected WeatherResult doInBackground(Void... voids) {
         try {
             // API zahteva 'kljuc' koji istice u nekom trenutku, besplatno je ali ga treba obnoviti
-            URL url = new URL("https://api.openweathermap.org/data/2.5/forecast?q=Novi%20Sad&units=metric&APPID=da4a295196c3545e6af06396366dd621");
+            URL url = new URL("https://api.openweathermap.org/data/2.5/forecast?q=Novi%20Sad&units=metric&APPID=" + BuildConfig.OPENWEATHER_API_KEY);
             // HTTP bez SSL zahteva neka dodatna bezbedonosna podesavanja na novijim verzijama Androida
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             if (conn.getResponseCode() == 200) {
@@ -83,6 +84,7 @@ public class PrognozaTask extends AsyncTask<Void, Void, WeatherResult> {
     @Override   // Glavna UI nit
     protected void onPostExecute (WeatherResult res){
         super.onPostExecute(res);
+        if (res == null || res.getList() == null || res.getList().length < 17) return;
         ArrayList<Hour> trodnevnaPrognoza = new ArrayList<Hour>();
         trodnevnaPrognoza.add(res.getList()[0]); // trenutna
         trodnevnaPrognoza.add(res.getList()[8]); // sutra u isto vreme

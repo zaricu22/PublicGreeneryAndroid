@@ -55,7 +55,7 @@ public class ShowTask extends AsyncTask<Void, Void, Job> {
             rok.setText(sdf.format(job.getRok()));
         }
         EditText materijali = activity.get().findViewById(R.id.text_materijali2);
-        if(!job.getMaterijal().equals(""))
+        if(job.getMaterijal() != null && !job.getMaterijal().isEmpty())
             materijali.setText(job.getMaterijal());
     }
 }

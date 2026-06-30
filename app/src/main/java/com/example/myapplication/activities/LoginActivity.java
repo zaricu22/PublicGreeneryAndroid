@@ -7,10 +7,12 @@ import androidx.room.Room;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.List;
 
 import com.example.myapplication.R;
 import com.example.myapplication.database.AppDatabase;
@@ -25,49 +27,91 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // lokalne promenljive
+        // Lokalne promenljive za polja forme
         final TextView tvUsername = findViewById(R.id.text_username);
         final TextView tvPassword = findViewById(R.id.text_password);
         Button btnLogin = findViewById(R.id.btnLogin);
 
-        // BRZ LOGIN RADI TESTIRANJA
+        // ========== PODESAVANJE BAZE (TESTNI REZIM) ==========
+        // fallbackToDestructiveMigration() — kada se promeni sema baze (nova verzija), Room
+        //   brise celu bazu i pravi je ispocetka umesto da pravi migraciju. Posledica: svi
+        //   podaci (korisnici, poslovi, eventi) se gube nakon promene seme.
+        // allowMainThreadQueries() — dozvoljava sinhrono citanje/pisanje baze na glavnoj niti.
+        //   Pogodno za testiranje, ali moze da zamrzne UI kod sporih upita. UKLONITI pre produkcije.
         AppDatabase appDB = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "gradsko-zelenilo").fallbackToDestructiveMigration().allowMainThreadQueries().build();
-        // Kada menjamo bazu to je nova verzija baze, Room ocekuje pravljenje migracija sa verzije na verziju
-        // ukoliko to ne zelimo mozemo navesti da izbrise migracije i da poslednja verzija baze bude pocetna
-        // allowMainThreadQueries() - dozvoljava radi testiranja potencijalno spore upite nad bazom koje mogu zakociti korisnicki interfejs
+                AppDatabase.class, "gradsko-zelenilo")
+                .fallbackToDestructiveMigration()
+                .allowMainThreadQueries()
+                .build();
 
-        System.out.println("DOSAO1");
+        Log.d("LOGIN", "onCreate: baza otvorena");
 
         DatabaseDAO dbDAO = appDB.databaseDao();
-//      Dodavanje nobog korisnika ukoliko je baza resetovana
-//        User user = new User();
-//        user.setUsername("Perax");
-//        user.setPassword("px");
-//        user.setFirstName("Petar");
-//        user.setLastName("Peric");
-//        user.setMesto("Veternik");
-//        user.setRadnoMesto("Orezivac");
-//        dbDAO.insertUsers(user);
-        tvUsername.setText("Perax");
-        tvPassword.setText("px");
-        dbDAO.login("Perax", "px")
-                .observe(LoginActivity.this, new Observer<User>() {
-                    @Override
-                    public void onChanged(@Nullable User user){
-                        System.out.println("DOSAO2 "+user);
-                        if(user != null) {
-                            // String s = (new Gson().toJson(client)); - Object to JSON preko GSON bibl
-                            // Cli client = new Gson().fromJson(s, Cli.class); - JSON to Object preko GSON bibl
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.putExtra("user", new Gson().toJson(user));
-                            startActivity(intent);
-                        }
-                    }
-                });
 
-        // LOGIN BUTTON KLIK LISTENER
-        // Sve prom iz spolj klase koje zelimo koristiti u unu klasama moraju biti 'final'
+        // ========== SEED: AUTOMATSKO KREIRANJE PREDEFINISANOG KORISNIKA ==========
+        // Na svakom pokretanju proveravamo da li korisnik "Perax" postoji u bazi.
+        // Ako ne postoji (npr. nakon sto je fallbackToDestructiveMigration obrisao bazu),
+        // automatski ga ubacujemo. Na taj nacin uvek imamo korisnika za testiranje.
+        //
+        // PAZNJA: getAllUsers() koristimo sinhrono jer imamo allowMainThreadQueries().
+        // Alternativa (LiveData login()) ne bi radila ovde — LiveData okida upit asinhrono
+        // na pozadinskoj niti, pa bi onChanged() mogao da vrati null pre nego sto Room
+        // registruje upravo upisanog korisnika, i prelaz na MainActivity se ne bi desio.
+        List<User> sviKorisnici = dbDAO.getAllUsers();
+        Log.d("LOGIN", "getAllUsers: pronadjeno " + sviKorisnici.size() + " korisnika u bazi");
+        for (User u : sviKorisnici) {
+            Log.d("LOGIN", "  -> username='" + u.getUsername() + "'");
+        }
+
+        User loggedInUser = null;
+        for (User u : sviKorisnici) {
+            if ("Perax".equals(u.getUsername())) {
+                loggedInUser = u;
+                break;
+            }
+        }
+
+        if (loggedInUser == null) {
+            // Korisnik nije u bazi — kreiramo ga (prvi pokretaj ili nakon resetovanja baze)
+            Log.d("LOGIN", "korisnik 'Perax' nije pronadjen — ubacujem u bazu");
+            loggedInUser = new User();
+            loggedInUser.setUsername("Perax");
+            loggedInUser.setPassword("px");
+            loggedInUser.setFirstName("Petar");
+            loggedInUser.setLastName("Peric");
+            loggedInUser.setMesto("Veternik");
+            loggedInUser.setRadnoMesto("Orezivac");
+            try {
+                dbDAO.insertUsers(loggedInUser);
+                Log.d("LOGIN", "insertUsers: uspesno");
+            } catch (Exception e) {
+                Log.e("LOGIN", "insertUsers: GRESKA — " + e.getMessage(), e);
+            }
+        } else {
+            Log.d("LOGIN", "korisnik 'Perax' pronadjen: " + loggedInUser);
+        }
+
+        // ========== AUTO-LOGIN (SAMO ZA TESTIRANJE) ==========
+        // Preskacemo manuelni unos kredencijala i odmah prelazimo na MainActivity.
+        // Korisnik se prosledjuje kao JSON string kroz Intent extra.
+        // NAPOMENA: LoginActivity ovde ne poziva finish(), sto znaci da ce pritiskom
+        //   na Back dugme iz MainActivity korisnik biti vracen na LoginActivity,
+        //   koji ce ga odmah ponovo ulogovati. Da se to izbegne, dodati finish() posle startActivity().
+        Log.d("LOGIN", "auto-login: pokretanje MainActivity sa korisnikom '" + loggedInUser.getUsername() + "'");
+        tvUsername.setText(loggedInUser.getUsername());
+        tvPassword.setText(loggedInUser.getPassword());
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.putExtra("user", new Gson().toJson(loggedInUser));
+        startActivity(intent);
+        Log.d("LOGIN", "startActivity pozvan — LoginActivity ostaje na steku");
+
+        // ========== MANUELNI LOGIN PUTEM DUGMETA (TRENUTNO ISKLJUCENO) ==========
+        // Odkomentarisati ovaj blok i zakomentarisati auto-login blok iznad da bi se
+        // vratilo na rucni unos kredencijala putem forme.
+        // VAZNO: Ne postoji ekran za registraciju — jedini korisnici koji mogu da se uloguju
+        // su oni koji su hardkodovani u seed bloku iznad. Unos bilo cega drugog uvek vraca null.
+        // Koristi LiveData za asinhrono citanje iz baze — rezultat stize u onChanged().
+        // Sve promenljive iz spoljne klase koje se koriste u unutrasnjim klasama moraju biti 'final'.
 //        btnLogin.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(final View v) {
@@ -75,16 +119,17 @@ public class LoginActivity extends AppCompatActivity {
 //                AppDatabase kk = Room.databaseBuilder(getApplicationContext(),
 //                        AppDatabase.class, "gradsko-zelenilo").fallbackToDestructiveMigration().build();
 //
-//                // Asinh dobav rez iz baze kao LiveData(auto nova nit) i osmatranje/cekanje da pristignu
+//                // Asinhrono dobavljanje rezultata iz baze kao LiveData (automatska pozadinska nit)
+//                // i osmatranje/cekanje da pristignu
 //                DatabaseDAO ss = kk.databaseDao();
 //                ss.login(tvUsername.getText().toString(), tvPassword.getText().toString())
 //                        .observe(LoginActivity.this, new Observer<User>() {
 //                    @Override
 //                    public void onChanged(@Nullable User user){
 //                        if(user != null) {
+//                            // String s = (new Gson().toJson(client)); - Object to JSON preko GSON bibl
+//                            // Cli client = new Gson().fromJson(s, Cli.class); - JSON to Object preko GSON bibl
 //                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-//                            // String s = (new Gson().toJson(client));  - Object to JSON preko GSON bibl
-//                            // Cli client = new Gson().fromJson(s, Cli.class);  - JSON to Object preko GSON bibl
 //                            intent.putExtra("user", new Gson().toJson(user));
 //                            startActivity(intent);
 //                        } else {
@@ -98,4 +143,3 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 }
-
