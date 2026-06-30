@@ -14,7 +14,6 @@ import com.example.myapplication.fragments.services.gson.Hour;
 import com.example.myapplication.fragments.services.gson.WeatherResult;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
@@ -72,10 +71,8 @@ public class PrognozaTask extends AsyncTask<Void, Void, WeatherResult> {
                 is2.close();
 
                 return res;
-            } else {
-                System.out.println("Nesto nije uredu sa REST servisom za prognozu");
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

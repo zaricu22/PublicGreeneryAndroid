@@ -30,7 +30,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         app:defaultNavHost="true"
-        app:layout_constraintBottom_toTopOf="@+id/nav_view_land"
+        app:layout_constraintBottom_toTopOf="@+id/nav_view_port"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

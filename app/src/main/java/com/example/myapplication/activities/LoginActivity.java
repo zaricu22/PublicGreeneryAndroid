@@ -7,7 +7,6 @@ import androidx.room.Room;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -44,8 +43,6 @@ public class LoginActivity extends AppCompatActivity {
                 .allowMainThreadQueries()
                 .build();
 
-        Log.d("LOGIN", "onCreate: baza otvorena");
-
         DatabaseDAO dbDAO = appDB.databaseDao();
 
         // ========== SEED: AUTOMATSKO KREIRANJE PREDEFINISANOG KORISNIKA ==========
@@ -58,10 +55,6 @@ public class LoginActivity extends AppCompatActivity {
         // na pozadinskoj niti, pa bi onChanged() mogao da vrati null pre nego sto Room
         // registruje upravo upisanog korisnika, i prelaz na MainActivity se ne bi desio.
         List<User> sviKorisnici = dbDAO.getAllUsers();
-        Log.d("LOGIN", "getAllUsers: pronadjeno " + sviKorisnici.size() + " korisnika u bazi");
-        for (User u : sviKorisnici) {
-            Log.d("LOGIN", "  -> username='" + u.getUsername() + "'");
-        }
 
         User loggedInUser = null;
         for (User u : sviKorisnici) {
@@ -73,7 +66,6 @@ public class LoginActivity extends AppCompatActivity {
 
         if (loggedInUser == null) {
             // Korisnik nije u bazi — kreiramo ga (prvi pokretaj ili nakon resetovanja baze)
-            Log.d("LOGIN", "korisnik 'Perax' nije pronadjen — ubacujem u bazu");
             loggedInUser = new User();
             loggedInUser.setUsername("Perax");
             loggedInUser.setPassword("px");
@@ -83,12 +75,9 @@ public class LoginActivity extends AppCompatActivity {
             loggedInUser.setRadnoMesto("Orezivac");
             try {
                 dbDAO.insertUsers(loggedInUser);
-                Log.d("LOGIN", "insertUsers: uspesno");
             } catch (Exception e) {
-                Log.e("LOGIN", "insertUsers: GRESKA — " + e.getMessage(), e);
+                e.printStackTrace();
             }
-        } else {
-            Log.d("LOGIN", "korisnik 'Perax' pronadjen: " + loggedInUser);
         }
 
         // ========== AUTO-LOGIN (SAMO ZA TESTIRANJE) ==========
@@ -97,13 +86,11 @@ public class LoginActivity extends AppCompatActivity {
         // NAPOMENA: LoginActivity ovde ne poziva finish(), sto znaci da ce pritiskom
         //   na Back dugme iz MainActivity korisnik biti vracen na LoginActivity,
         //   koji ce ga odmah ponovo ulogovati. Da se to izbegne, dodati finish() posle startActivity().
-        Log.d("LOGIN", "auto-login: pokretanje MainActivity sa korisnikom '" + loggedInUser.getUsername() + "'");
         tvUsername.setText(loggedInUser.getUsername());
         tvPassword.setText(loggedInUser.getPassword());
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         intent.putExtra("user", new Gson().toJson(loggedInUser));
         startActivity(intent);
-        Log.d("LOGIN", "startActivity pozvan — LoginActivity ostaje na steku");
 
         // ========== MANUELNI LOGIN PUTEM DUGMETA (TRENUTNO ISKLJUCENO) ==========
         // Odkomentarisati ovaj blok i zakomentarisati auto-login blok iznad da bi se

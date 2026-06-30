@@ -49,7 +49,6 @@ public class AddActivity extends AppCompatActivity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("USPEO KLIK ");
                 Job j = new Job();
                 j.setOpis(textOpis.getText().toString());
                 j.setMaterijal(textMaterijali.getText().toString());
@@ -64,15 +63,10 @@ public class AddActivity extends AppCompatActivity {
                 j.setLat(selectedLatitude);
                 j.setLng(selectedLongitude);
 
-                System.out.println("AAAA "+j.toString());
                 // Komunikacija sa bazom u posebnoj niti
-                AddTask at = new AddTask(getApplicationContext());
+                // finish() i Toast se pozivaju iz onPostExecute nakon sto insert zavrsi
+                AddTask at = new AddTask(AddActivity.this);
                 at.execute(j);
-
-                // Vratimo rezultat glavnoj aktivnosti i zavrsimo tekucu aktivnost
-                Intent returnIntent = getIntent();
-                setResult(Activity.RESULT_CANCELED, returnIntent);  // resultCode
-                finish();
             }
         });
     }

@@ -27,7 +27,6 @@ public class ProfileTask extends AsyncTask<Void, Void, Bitmap> {
             InputStream is0 = (InputStream) url0.getContent();
             Bitmap bmp0 = BitmapFactory.decodeStream(is0);
             if(bmp0 != null)
-                System.out.println("USPESNAAAA");
             is0.close();
             return bmp0;
         } catch (Exception e) {

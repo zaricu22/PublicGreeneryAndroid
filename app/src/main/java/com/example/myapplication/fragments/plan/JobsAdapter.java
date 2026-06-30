@@ -57,7 +57,6 @@ public class JobsAdapter extends RecyclerView.Adapter<JobsAdapter.JobsViewHolder
     // Create new views (invoked by the layout manager)
     @Override
     public JobsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        System.out.println("onCreateViewHolder");
         View view = myInflater.inflate(R.layout.recycler_plan_row, parent, false);
         return new JobsViewHolder(view);
     }
@@ -65,7 +64,6 @@ public class JobsAdapter extends RecyclerView.Adapter<JobsAdapter.JobsViewHolder
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(JobsAdapter.JobsViewHolder holder, int position) {
-        System.out.println("onBindViewHolder");
         position = holder.getAdapterPosition();
         String status = poslovi.get(position).getStatus();
         final ImageView imgStatus = holder.status;
@@ -93,7 +91,6 @@ public class JobsAdapter extends RecyclerView.Adapter<JobsAdapter.JobsViewHolder
         holder.show.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("DDDDD "+isOnline()+" "+isLocationEnabled());
                 if (!isLocationEnabled() || !isOnline())
                     Toast.makeText(context.get(),"Internet ili lokacija nisu dostupni!",Toast.LENGTH_LONG).show();
                 else {

@@ -21,7 +21,6 @@ public class ProfileFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_profile, container, false);
 
         Intent i = ((MainActivity)getActivity()).getIntent();
-        System.out.println(i.getStringExtra("user"));
         User u = new Gson().fromJson(i.getStringExtra("user"), User.class);
         ((TextView)root.findViewById(R.id.text_ime)).setText(u.getFirstName()+" "+u.getLastName());
         ((TextView)root.findViewById(R.id.text_mesto)).setText(u.getMesto());

@@ -44,7 +44,6 @@ public class StatusUpdateTask extends AsyncTask<Void, Void, Void> {
             job.setStatus("Urađeno");
             statusChanged = true;
         }
-        System.out.println("AZURIRANO "+job.getStatus());
         dbDAO.updateJobs(job);
 
         return null;

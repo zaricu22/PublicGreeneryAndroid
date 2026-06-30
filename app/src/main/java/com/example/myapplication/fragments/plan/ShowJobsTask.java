@@ -40,44 +40,41 @@ public class ShowJobsTask extends AsyncTask<Void, Void, List<Job>> {
 
     @Override   // Sporedna nit
     protected List<Job> doInBackground(Void... voids) {
-        AppDatabase appDB = Room.databaseBuilder(context.get(),
-                AppDatabase.class, "gradsko-zelenilo").fallbackToDestructiveMigration().build();
-        DatabaseDAO dbDAO = appDB.databaseDao();
+        try {
+            AppDatabase appDB = Room.databaseBuilder(context.get(),
+                    AppDatabase.class, "gradsko-zelenilo").fallbackToDestructiveMigration().build();
+            DatabaseDAO dbDAO = appDB.databaseDao();
 
-        // Jako nezahvalne stare klase za rad sa datumom(npr. mesec-1, god-1900...) radi kompatibilnosti
-        Date poc = new Date();  // pocetni dan u datom mesecu
-        poc.setMonth(mesec-1); poc.setDate(1); poc.setHours(0); poc.setMinutes(0); poc.setSeconds(0);
-        Date kraj = new Date(); // poslednji dan u datom mesecu
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2020, mesec-1, 1);
-        kraj.setMonth(mesec-1); kraj.setDate(calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-        kraj.setHours(23); kraj.setMinutes(59); kraj.setSeconds(59);
+            // Jako nezahvalne stare klase za rad sa datumom(npr. mesec-1, god-1900...) radi kompatibilnosti
+            Date poc = new Date();  // pocetni dan u datom mesecu
+            poc.setMonth(mesec-1); poc.setDate(1); poc.setHours(0); poc.setMinutes(0); poc.setSeconds(0);
+            Date kraj = new Date(); // poslednji dan u datom mesecu
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(2020, mesec-1, 1);
+            kraj.setMonth(mesec-1); kraj.setDate(calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+            kraj.setHours(23); kraj.setMinutes(59); kraj.setSeconds(59);
 
-        List<Job> listaPoslova;
-        if(status.equals("Sve")){   // svi status-i
-            System.out.println("EEEE "+poc+" "+kraj);
-            listaPoslova = dbDAO.getJobsByMesec(poc,kraj);
-            System.out.println(listaPoslova);
+            List<Job> listaPoslova;
+            if(status.equals("Sve")){
+                listaPoslova = dbDAO.getJobsByMesec(poc,kraj);
+            }
+            else{
+                listaPoslova = dbDAO.getJobs(status,poc,kraj);
+            }
+
+            return listaPoslova;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        else{
-            System.out.println("FFFF "+poc+" "+kraj);
-            listaPoslova = dbDAO.getJobs(status,poc,kraj);
-            System.out.println(listaPoslova);
-        }
-
-        return listaPoslova;
     }
 
     @Override   // Glavna nit
     protected void onPostExecute(List<Job> listaPoslova) {
         super.onPostExecute(listaPoslova);
-        // Azuriramo UI
-        // Da bi se video scroll u layout/*.xml dodati android:scrollbars="vertical"
-        // RecyclerView je po default-u scrollable
+        if (listaPoslova == null || view.get() == null || context.get() == null) return;
         RecyclerView recyclerView = this.view.get().findViewById(R.id.recycler_plan);
         recyclerView.setLayoutManager(new LinearLayoutManager(this.context.get()));
-        System.out.println("RC1 "+recyclerView.getLayoutManager().getLayoutDirection());
         recyclerView.setAdapter(new JobsAdapter(context, activity, LayoutInflater.from(this.context.get()), res, listaPoslova));
-        System.out.println("RC2 "+recyclerView.getAdapter().getItemCount());
     }
 }

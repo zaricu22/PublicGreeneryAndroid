@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import com.example.myapplication.R;
 import com.example.myapplication.activities.AddActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import java.lang.ref.WeakReference;
 import java.util.Date;
 
 public class PlanFragment extends Fragment {
@@ -37,14 +38,34 @@ public class PlanFragment extends Fragment {
         public void setMesec(Integer mesec) { this.mesec = mesec; }
     }
 
+    private StringWrapper statusWrapper;
+    private IntegerWrapper mesecWrapper;
+    private View root;
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Osvezi listu po povratku iz AddActivity (ili bilo kog drugog ekrana)
+        if (root != null && statusWrapper != null && mesecWrapper != null) {
+            ShowJobsTask sjt = new ShowJobsTask(
+                    new WeakReference<>(getContext()),
+                    new WeakReference<>(getActivity()),
+                    new WeakReference<>(root),
+                    getResources(),
+                    statusWrapper.getStatus(),
+                    mesecWrapper.getMesec());
+            sjt.execute();
+        }
+    }
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
         // Da bi oba Spinner Listener-a mogla azurirati RecyclerView
-        StringWrapper statusWrapper = new StringWrapper("Sve");
-        IntegerWrapper mesecWrapper = new IntegerWrapper(new Date().getMonth()+1); // trenutni mesec
+        statusWrapper = new StringWrapper("Sve");
+        mesecWrapper = new IntegerWrapper(new Date().getMonth()+1); // trenutni mesec
 
-        View root = inflater.inflate(R.layout.fragment_plan, container, false);
+        root = inflater.inflate(R.layout.fragment_plan, container, false);
 
         // Nakon kreiranja spinner-a poziva se njegov listener sa pocetnom vrednoscu
         // SPINNER STATUS PRIKAZ I LISTENER
@@ -85,7 +106,6 @@ public class PlanFragment extends Fragment {
         btnFA.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("CCCCC "+isOnline()+" "+isLocationEnabled());
                 if (!isLocationEnabled() || !isOnline())
                     Toast.makeText(getContext(),"Internet ili lokacija nisu dostupni!",Toast.LENGTH_LONG).show();
                 else {
@@ -113,4 +133,3 @@ public class PlanFragment extends Fragment {
     PlanFragment -> StatusListener -> ShowJobsTask -> JobAdapter -> StatusUpdateTask & ShowActivity(ShowTask)
     PlanFragment -> MesecListener -> ShowJobsTask -> JobAdapter -> StatusUpdateTask & ShowActivity(ShowTask)
  */
-
